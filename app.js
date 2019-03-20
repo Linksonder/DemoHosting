@@ -28,21 +28,13 @@ var ideaSchema = mongoose.Schema({
 var Idea = mongoose.model('Idea', ideaSchema)
 
 
-
-
-app.get('/ideas', (req, res) => {
-    Idea.find().exec((err, ideas) => res.send(ideas))
+app.use((req, res, next) => {
+    res.broadcast = require('./broadcast')(io);
+    next();
 })
 
-app.post('/ideas', (req, res) => {
-    new Idea(req.body).save((err, idea) => {
-        Idea.find().exec((err, ideas) => {
-            console.log('updaing clients')
-            io.emit('new_idea', ideas);
-            res.send(ideas);
-        })
-    })  
-})
+const ideaRoutes = require('./idea-routes')();
+app.use(ideaRoutes);
 
 app.get('/error', (req, res) => {
     throw "Error Error Software malfunction x.X bleep bleep blop";
