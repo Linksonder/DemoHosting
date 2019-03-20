@@ -1,10 +1,15 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var socket = require('socket.io');
+
 
 var app = express();
+var http = require('http').Server(app);
 
-mongoose.connect('mongodb+srv://linksonder:rechtsboven@cluster0-tlmcp.mongodb.net/test?retryWrites=true');
+
+var config = require('./config');
+mongoose.connect(config.mongodb);
 
 var ideaSchema = mongoose.Schema({
     idea: { type: String, required: true },
@@ -34,4 +39,5 @@ app.get('/error', (req, res) => {
 })
 
 var port = process.env.PORT || 1337;
-app.listen(port);
+http.listen(port);
+
