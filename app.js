@@ -1,12 +1,20 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var socket = require('socket.io');
 
 
 var app = express();
-var http = require('http').Server(app);
+app.use(express.static('public'));
+app.use(bodyParser.json());
 
+
+var server = require('http').createServer(app);
+
+var io = require('socket.io')(server);
+
+io.on('connection', function(socket){
+    console.log('a new user!');
+})
 
 var config = require('./config');
 mongoose.connect(config.mongodb);
@@ -20,8 +28,7 @@ var ideaSchema = mongoose.Schema({
 var Idea = mongoose.model('Idea', ideaSchema)
 
 
-app.use(express.static('public'));
-app.use(bodyParser.json());
+
 
 app.get('/ideas', (req, res) => {
     Idea.find().exec((err, ideas) => res.send(ideas))
@@ -29,7 +36,11 @@ app.get('/ideas', (req, res) => {
 
 app.post('/ideas', (req, res) => {
     new Idea(req.body).save((err, idea) => {
-        Idea.find().exec((err, ideas) => res.send(ideas))
+        Idea.find().exec((err, ideas) => {
+            console.log('updaing clients')
+            io.emit('new_idea', ideas);
+            res.send(ideas);
+        })
     })  
 })
 
@@ -39,5 +50,5 @@ app.get('/error', (req, res) => {
 })
 
 var port = process.env.PORT || 1337;
-http.listen(port);
+server.listen(port);
 
