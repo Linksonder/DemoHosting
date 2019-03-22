@@ -16,7 +16,12 @@ io.on('connection', function(socket){
     console.log('a new user!');
 })
 
-var config = require('./config');
+
+var msg = process.env.test || 'Hello local';
+console.log(msg);
+
+
+var config = require('./config') ;
 mongoose.connect(config.mongodb);
 
 var ideaSchema = mongoose.Schema({
